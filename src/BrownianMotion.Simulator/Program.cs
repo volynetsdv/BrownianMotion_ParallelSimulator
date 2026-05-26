@@ -111,6 +111,14 @@ static async Task RunHighPerf(SimulationConfig config)
             {
                 engine.TogglePause();
             }
+            else if (Raylib.IsKeyPressed(KeyboardKey.Right))
+            {
+                // Якщо симуляція вже на паузі, робимо крок
+                if (engine.IsPaused)
+                {
+                    engine.RequestSingleStep();
+                }
+            }
             renderer.RenderFrame();
         }
     }

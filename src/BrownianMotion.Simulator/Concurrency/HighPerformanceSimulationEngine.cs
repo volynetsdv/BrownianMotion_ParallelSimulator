@@ -45,6 +45,8 @@ public sealed class HighPerformanceSimulationEngine : IDisposable
     // Performance counters
     private long _totalAtomicOps;
 
+    private volatile bool _stepRequested = false;
+
     public Grid Grid => _grid;
     public DoubleBufferSnapshot Snapshot => _snapshot;
     public SimulationStats Stats => _stats;
@@ -54,13 +56,19 @@ public sealed class HighPerformanceSimulationEngine : IDisposable
     // Механізм паузи/відновлення для демонстрації 
     private readonly ManualResetEventSlim _pauseEvent = new(true);
     public bool IsPaused => !_pauseEvent.IsSet;
-
     public void TogglePause()
     {
         if (_pauseEvent.IsSet)
             _pauseEvent.Reset(); // пауза - закриваємо ворота
         else
             _pauseEvent.Set(); // пуск - відкриваємо ворота
+    }
+
+    public void RequestSingleStep()
+    {
+        // Дозволяємо потокам пройти рівно один такт
+        _stepRequested = true;
+        _pauseEvent.Set(); // Тимчасово відкриваємо ворота
     }
 
     public HighPerformanceSimulationEngine(SimulationConfig config)
@@ -148,7 +156,6 @@ public sealed class HighPerformanceSimulationEngine : IDisposable
     /// </summary>
     private void WorkerLoop(int startIdx, int endIdx, CancellationToken ct)
     {
-        // Pre-cache config values - avoid repeated property lookups in hot loop
         double probUp = _config.ProbUp;
         double probDown = _config.ProbDown;
         double probLeft = _config.ProbLeft;
@@ -160,8 +167,11 @@ public sealed class HighPerformanceSimulationEngine : IDisposable
 
         while (!ct.IsCancellationRequested)
         {
-            try { _pauseEvent.Wait(ct); }
-            catch (OperationCanceledException) { break; }
+            if (!_stepRequested)
+            {
+                try { _pauseEvent.Wait(ct); }
+                catch (OperationCanceledException) { break; }
+            }
             // Цикл обробки: виконуємо обробку фрагменту частинок цього робочого процесу 
             for (int i = startIdx; i < endIdx; i++)
             {
@@ -205,6 +215,11 @@ public sealed class HighPerformanceSimulationEngine : IDisposable
             }
             catch (OperationCanceledException) { break; }
             catch (BarrierPostPhaseException) { break; }
+            if (_stepRequested)
+            {
+                _stepRequested = false;
+                _pauseEvent.Reset(); // Знову стаємо на паузу
+            }
         }
 
         // Скинути значення локального лічильника до глобального
@@ -233,7 +248,7 @@ public sealed class HighPerformanceSimulationEngine : IDisposable
         Console.WriteLine($"  Expected K = {_config.ParticleCount,-10} ");
         Console.WriteLine($"  Actual  Σ  = {sum,-10} ");
         Console.WriteLine($"  Drift      = {(sum - _config.ParticleCount),-10:+#;-#;0} ");
-        Console.WriteLine($"  Status     = {(valid ? "✓ CONSERVED " : "✗ VIOLATED  "),-12} ");
+        Console.WriteLine($"  Status     = {(valid ? "OK: COMPLAINT" : "ERROR: NON-COMPLAINT"),-12} ");
         Console.WriteLine("=============================================");
     }
 
