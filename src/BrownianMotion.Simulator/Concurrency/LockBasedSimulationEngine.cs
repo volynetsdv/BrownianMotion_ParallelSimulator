@@ -14,7 +14,7 @@ namespace BrownianMotion.Simulator.Concurrency;
 /// 
 /// Б) РІШЕННЯ - впорядкування ресурсів (Дейкстра):
 ///    Усі потоки завжди отримують блокування комірок у порядку зростання індексів.
-///    Це порушує циклічну умову очікування → тупикова ситуація неможлива.
+///    Це порушує циклічну умову очікування -> тупикова ситуація неможлива.
 ///    Дивіться Grid.MoveParticleLocked() для реалізації.
 /// 
 /// Примітка щодо продуктивності: детальне блокування на рівні окремих комірок
@@ -178,7 +178,7 @@ public sealed class LockBasedSimulationEngine : IDisposable
 
         var t1 = new Thread(() =>
         {
-            Console.WriteLine("[Thread 1] Attempting: lock(A) → lock(B)");
+            Console.WriteLine("[Thread 1] Attempting: lock(A) -> lock(B)");
             lock (lockA)
             {
                 Console.WriteLine("[Thread 1] Acquired lockA, sleeping briefly...");
@@ -193,7 +193,7 @@ public sealed class LockBasedSimulationEngine : IDisposable
 
         var t2 = new Thread(() =>
         {
-            Console.WriteLine("[Thread 2] Attempting: lock(B) → lock(A)");
+            Console.WriteLine("[Thread 2] Attempting: lock(B) -> lock(A)");
             lock (lockB)
             {
                 Console.WriteLine("[Thread 2] Acquired lockB, sleeping briefly...");
@@ -228,7 +228,7 @@ public sealed class LockBasedSimulationEngine : IDisposable
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine("\n[SOLUTION] Resource Ordering: always lock lower index first.");
         Console.WriteLine("[SOLUTION] Grid.MoveParticleLocked() implements this correctly.");
-        Console.WriteLine("[SOLUTION] Circular wait is impossible → deadlock impossible.\n");
+        Console.WriteLine("[SOLUTION] Circular wait is impossible -> deadlock impossible.\n");
         Console.ResetColor();
     }
 

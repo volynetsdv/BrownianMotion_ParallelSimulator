@@ -190,7 +190,7 @@ public sealed class HighPerformanceSimulationEngine : IDisposable
                     case Direction.Right: nx++; break;
                 }
 
-                // Reflection: фіксація до межі сітки (відбивання від стінок)
+                // Фіксація до межі сітки
                 if (nx < 0) nx = 0; else if (nx > gridW) nx = gridW;
                 if (ny < 0) ny = 0; else if (ny > gridH) ny = gridH;
 

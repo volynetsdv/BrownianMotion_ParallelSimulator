@@ -101,8 +101,8 @@ public sealed class Grid
         if (fromIdx == toIdx) return;
 
         // Intentionally lock in address order - not index order - causes deadlock
-        lock (_cellLocks[fromIdx])   // ← Thread A locks from, Thread B locks to
-            lock (_cellLocks[toIdx])     // ← Both now wait for the other → deadlock
+        lock (_cellLocks[fromIdx])   // <- Thread A locks from, Thread B locks to
+            lock (_cellLocks[toIdx])     // <- Both now wait for the other -> deadlock
             {
                 _cells[fromIdx]--;
                 _cells[toIdx]++;
