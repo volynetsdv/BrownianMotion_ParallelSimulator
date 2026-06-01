@@ -133,7 +133,7 @@ public sealed class HighPerformanceSimulationEngine : IDisposable
                 _cts!.Cancel();
         });
 
-        // Build worker chunks
+        // Розподіл часток між воркерами (Chunking)
         int chunkSize = (int)Math.Ceiling((double)_config.ParticleCount / workerCount);
         _workerTasks = new Task[workerCount];
 
@@ -175,7 +175,7 @@ public sealed class HighPerformanceSimulationEngine : IDisposable
             // Цикл обробки: виконуємо обробку фрагменту частинок цього робочого процесу 
             for (int i = startIdx; i < endIdx; i++)
             {
-                ref Particle p = ref _particles[i]; // ref avoids copy of struct
+                ref Particle p = ref _particles[i]; // ref дозволяє уникнути копіювання структури
 
                 Direction dir = RngFactory.NextDirection(probUp, probDown, probLeft, probRight);
 
@@ -194,7 +194,7 @@ public sealed class HighPerformanceSimulationEngine : IDisposable
                 if (nx < 0) nx = 0; else if (nx > gridW) nx = gridW;
                 if (ny < 0) ny = 0; else if (ny > gridH) ny = gridH;
 
-                if (nx == p.X && ny == p.Y) continue; // hit wall, no move
+                if (nx == p.X && ny == p.Y) continue; // не рухаємось
 
                 // атомарність: дві взаємозалежні операції - безпечні для 
                 // багатопотокового виконання, без блокувань

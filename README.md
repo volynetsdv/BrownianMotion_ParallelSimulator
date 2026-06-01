@@ -82,31 +82,31 @@ dotnet run --project src/BrownianMotion.Simulator -c Release -- \
 
 ---
 
-## Architecture
+## Архітектура
 
 ```
 BrownianMotion.Simulator/
 ├── Core/
-│   ├── SimulationConfig.cs       # All tunable parameters
-│   ├── Particle.cs               # Lightweight struct (ID, X, Y)
-│   ├── Grid.cs                   # Flat int[] grid, unsafe/locked/atomic moves
-│   ├── DoubleBufferSnapshot.cs   # Lock-free front/back buffer for renderer
-│   ├── RngFactory.cs             # ThreadLocal<Random>, seeded per-thread
-│   └── SimulationStats.cs        # TPS, drift, validation counters
+│   ├── SimulationConfig.cs       # Параметри симуляції (константи та налаштування)
+│   ├── Particle.cs               # Легковажна структура частинки (X, Y)
+│   ├── Grid.cs                   # Атомарна сітка на базі одновимірного масиву
+│   ├── DoubleBufferSnapshot.cs   # Lock-free механізм передачі даних рендереру
+│   ├── RngFactory.cs             # ThreadLocal генератор випадкових чисел
+│   └── SimulationStats.cs        # Метрики: TPS, Δ-дрейф, лічильники валідації
 │
 ├── Concurrency/
-│   ├── UnsafeSimulationEngine.cs       # Phase 2: Race conditions
-│   ├── LockBasedSimulationEngine.cs    # Phase 3A: Deadlock demo + fix
-│   └── HighPerformanceSimulationEngine.cs  # Phase 3B+4: Interlocked + worker pool
+│   ├── UnsafeSimulationEngine.cs       # Реалізація з Race Conditions (для порівняння)
+│   ├── LockBasedSimulationEngine.cs    # Реалізація на базі блокувань та демонстрація Deadlocks
+│   └── HighPerformanceSimulationEngine.cs  # Фінальний рушій: Interlocked + Worker Pool
 │
 ├── Visualization/
-│   ├── SimulationRenderer.cs     # Raylib-cs render loop (decoupled FPS)
-│   └── ColorMap.cs               # Density → heat-map color
+│   ├── SimulationRenderer.cs     # Цикл рендерингу Raylib (декоплінг від FPS фізики)
+│   └── ColorMap.cs               # Логіка перетворення щільності в теплову карту (Heat-map)
 │
 ├── Benchmarks/
-│   └── PerformanceBenchmark.cs   # 1T/particle vs worker pool vs Parallel.For
+│   └── PerformanceBenchmark.cs   # Порівняння стратегій (1T/Particle vs Worker Pool)
 │
-└── Program.cs                    # CLI entry point
+└── Program.cs                    # Точка входу та обробка аргументів CLI
 ```
 
 ---
